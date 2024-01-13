@@ -85,18 +85,13 @@ module Api
       lat = OSM.parse_float(params[:lat], OSM::APIBadUserInput, "lat was not a number")
       comment = params[:text]
 
-      # Include in a transaction to ensure that there is always a note_comment for every note
-      Note.transaction do
-        # Create the note
-        @note = Note.create(:lat => lat, :lon => lon)
-        raise OSM::APIBadUserInput, "The note is outside this world" unless @note.in_world?
+      # Create the note
+      attributes = { :lat => lat, :lon => lon, :body => comment }.merge(author_for_note_or_comment_attributes)
+      @note = Note.create(attributes)
+      raise OSM::APIBadUserInput, "The note is outside this world" unless @note.in_world?
 
-        # Save the note
-        @note.save!
-
-        # Add a comment to the note
-        add_comment(@note, comment, "opened")
-      end
+      # Save the note
+      @note.save!
 
       # Return a copy of the new note
       respond_to do |format|
@@ -384,25 +379,18 @@ module Api
     ##
     # Add a comment to a note
     def add_comment(note, text, event, notify: true)
-      attributes = { :visible => true, :event => event, :body => text }
-
-      if doorkeeper_token || current_token
-        author = current_user if scope_enabled?(:write_notes)
-      else
-        author = current_user
-      end
-
-      if author
-        attributes[:author_id] = author.id
-      else
-        attributes[:author_ip] = request.remote_ip
-      end
-
+      attributes = { :visible => true, :event => event, :body => text }.merge(author_for_note_or_comment_attributes)
       comment = note.comments.create!(attributes)
 
       note.comments.map(&:author).uniq.each do |user|
         UserMailer.note_comment_notification(comment, user).deliver_later if notify && user && user != current_user && user.visible?
       end
+    end
+
+    def author_for_note_or_comment_attributes
+      return { author_ip: request.remote_ip } if (doorkeeper_token || current_token) && scope_enabled?(:write_notes)
+
+      { author: current_user }
     end
   end
 end

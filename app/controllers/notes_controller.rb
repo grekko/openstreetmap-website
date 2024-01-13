@@ -37,6 +37,11 @@ class NotesController < ApplicationController
       @note = Note.visible.find(params[:id])
       @note_comments = @note.comments
     end
+
+    # FIXME notes_refactoring
+    unless @note.body?
+      @note_comments = @note_comments.drop(1)
+    end
   rescue ActiveRecord::RecordNotFound
     render :template => "browse/not_found", :status => :not_found
   end
