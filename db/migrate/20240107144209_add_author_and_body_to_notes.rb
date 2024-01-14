@@ -1,9 +1,13 @@
 class AddAuthorAndBodyToNotes < ActiveRecord::Migration[7.1]
   def change
-    add_column :notes, :author_id, :bigint, :null => true
-    add_foreign_key :notes, :users, :column => :author_id, :validate => false
+    safety_assured do
+      change_table :notes, :bulk => true do |t|
+        t.column :author_id, :bigint, :null => true
+        t.column :author_ip, :inet, :null => true
+        t.column :body, :text, :null => true
+      end
+    end
 
-    add_column :notes, :author_ip, :inet, :null => true
-    add_column :notes, :body, :text, :null => true
+    add_foreign_key :notes, :users, :column => :author_id, :validate => false
   end
 end
