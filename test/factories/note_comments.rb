@@ -5,7 +5,7 @@ FactoryBot.define do
     event { "commented" }
     note
 
-    # FIXME notes_refactoring
+    # FIXME: notes_refactoring
     trait :opened do
       event { "opened" }
     end

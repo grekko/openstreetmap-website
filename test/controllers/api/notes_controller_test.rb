@@ -240,9 +240,8 @@ module Api
       second_user = create(:user)
       third_user = create(:user)
 
-      note_with_comments_by_users = create(:note, author: first_user) do |note|
-        create(:note_comment, :note => note, :author => second_user)
-      end
+      note_with_comments_by_users = create(:note, :author => first_user)
+      create(:note_comment, :note => note_with_comments_by_users, :author => second_user)
 
       auth_header = basic_authorization_header third_user.email, "test"
 
@@ -870,22 +869,17 @@ module Api
     end
 
     def test_search_by_user_success
-      user = create(:user)
+      note = create(:note, :author => create(:user))
+      note_comment = create(:note_comment, :note => note, :author => create(:user))
 
-      note = create(:note, :author => create(:user)) do |note|
-        create(:note_comment, :note => note, :author => user)
+      get search_api_notes_path(:user => [note.author, note_comment.author].sample.id, :format => "xml")
+      assert_response :success
+      assert_equal "application/xml", @response.media_type
+      assert_select "osm", :count => 1 do
+        assert_select "note", :count => 1
       end
 
-      [note.author, user].each do |record|
-        get search_api_notes_path(:user => user.id, :format => "xml")
-        assert_response :success
-        assert_equal "application/xml", @response.media_type
-        assert_select "osm", :count => 1 do
-          assert_select "note", :count => 1
-        end
-      end
-
-      get search_api_notes_path(:user => user.id, :format => "json")
+      get search_api_notes_path(:user => [note.author, note_comment.author].sample.id, :format => "json")
       assert_response :success
       assert_equal "application/json", @response.media_type
       js = ActiveSupport::JSON.decode(@response.body)
@@ -893,7 +887,7 @@ module Api
       assert_equal "FeatureCollection", js["type"]
       assert_equal 1, js["features"].count
 
-      get search_api_notes_path(:user => user.id, :format => "rss")
+      get search_api_notes_path(:user => [note.author, note_comment.author].sample.id, :format => "rss")
       assert_response :success
       assert_equal "application/rss+xml", @response.media_type
       assert_select "rss", :count => 1 do
@@ -902,7 +896,7 @@ module Api
         end
       end
 
-      get search_api_notes_path(:user => user.id, :format => "gpx")
+      get search_api_notes_path(:user => [note.author, note_comment.author].sample.id, :format => "gpx")
       assert_response :success
       assert_equal "application/gpx+xml", @response.media_type
       assert_select "gpx", :count => 1 do

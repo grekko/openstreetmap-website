@@ -64,7 +64,7 @@ class NoteTest < ActiveSupport::TestCase
     assert_not create(:note, :status => "open", :closed_at => nil).closed?
   end
 
-  # FIXME notes_refactoring
+  # FIXME: notes_refactoring
   def test_author_remove_after_notes_refactoring_is_completed
     comment = create(:note_comment, :opened)
     assert_nil comment.note.author
@@ -83,7 +83,7 @@ class NoteTest < ActiveSupport::TestCase
     assert_equal user, note.author
   end
 
-  # FIXME notes_refactoring
+  # FIXME: notes_refactoring
   def test_author_ip_remove_after_notes_refactoring_is_completed
     comment = create(:note_comment, :opened)
     assert_nil comment.note.author_ip

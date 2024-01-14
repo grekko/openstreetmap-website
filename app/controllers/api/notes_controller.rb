@@ -399,9 +399,9 @@ module Api
     end
 
     def author_for_note_or_comment_attributes
-      return { author_ip: request.remote_ip } if (doorkeeper_token || current_token) && scope_enabled?(:write_notes)
+      return { :author_ip => request.remote_ip } if (doorkeeper_token || current_token) && scope_enabled?(:write_notes)
 
-      { author: current_user }
+      { :author => current_user }
     end
   end
 end

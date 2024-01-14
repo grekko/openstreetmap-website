@@ -87,18 +87,18 @@ class Note < ApplicationRecord
     closed_at + DEFAULT_FRESHLY_CLOSED_LIMIT
   end
 
-  # FIXME notes_refactoring
+  # FIXME: notes_refactoring
   def includes_body_and_author?
-    attributes["body"].present? && %w[author_ip author_id].any? { |key| attributes.keys.include?(key) }
+    attributes["body"].present? && %w[author_ip author_id].any? { |key| attributes.key?(key) }
   end
 
-  # FIXME notes_refactoring
+  # FIXME: notes_refactoring
   # Return the author object, derived from the first comment
   def author
     super || comment_opened_note&.author
   end
 
-  # FIXME notes_refactoring
+  # FIXME: notes_refactoring
   # Return the author IP address, derived from the first comment
   def author_ip
     super || comment_opened_note&.author_ip
@@ -113,7 +113,7 @@ class Note < ApplicationRecord
   private
 
   def build_comments_for_api
-    # FIXME notes_refactoring no need for the guard once the backfilling is completed
+    # FIXME: notes_refactoring no need for the guard once the backfilling is completed
     return comments unless includes_body_and_author?
 
     comments = self.comments.to_a
@@ -123,18 +123,18 @@ class Note < ApplicationRecord
 
   def build_opened_comment
     NoteComment.new(
-      created_at: created_at,
-      event: "opened",
-      note: self,
-      author: author,
-      author_ip: author_ip,
-      body: body,
+      :created_at => created_at,
+      :event => "opened",
+      :note => self,
+      :author => author,
+      :author_ip => author_ip,
+      :body => body
     )
   end
 
-  # FIXME notes_refactoring
+  # FIXME: notes_refactoring
   def comment_opened_note
-    comments.find_by(event: "opened")
+    comments.find_by(:event => "opened")
   end
 
   # Fill in default values for new notes

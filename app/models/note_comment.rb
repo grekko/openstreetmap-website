@@ -33,8 +33,8 @@ class NoteComment < ApplicationRecord
   validates :note, :associated => true
   validates :visible, :inclusion => [true, false]
   validates :author, :associated => true
-  # FIXME notes_refactoring `opened` is not a valid state anymore after backfilling migration is completed
-  validates :event, :inclusion => %w[opened closed reopened commented hidden] 
+  # FIXME: notes_refactoring `opened` is not a valid state anymore after backfilling migration is completed
+  validates :event, :inclusion => %w[opened closed reopened commented hidden]
   validates :body, :length => { :maximum => 2000 }, :characters => true
 
   # Return the comment text
