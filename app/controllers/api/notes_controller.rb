@@ -392,16 +392,23 @@ module Api
       attributes = { :visible => true, :event => event, :body => text }.merge(author_attributes)
       comment = note.comments.create!(attributes)
 
-      users_to_notify = ([note.author] + note.comments.map(&:author)).uniq
-      users_to_notify.each do |user|
+      ([note.author] + note.comments.map(&:author)).uniq.each do |user|
         UserMailer.note_comment_notification(comment, user).deliver_later if notify && user && user != current_user && user.visible?
       end
     end
 
     def author_attributes
-      return { :author_ip => request.remote_ip } if (doorkeeper_token || current_token) && scope_enabled?(:write_notes)
+      if doorkeeper_token || current_token
+        author = current_user if scope_enabled?(:write_notes)
+      else
+        author = current_user
+      end
 
-      { :author => current_user }
+      if author
+        { :author => current_user }
+      else
+        { :author_ip => request.remote_ip }
+      end
     end
   end
 end
