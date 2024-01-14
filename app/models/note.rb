@@ -10,12 +10,19 @@
 #  created_at :datetime         not null
 #  status     :enum             not null
 #  closed_at  :datetime
+#  author_id  :bigint(8)
+#  author_ip  :inet
+#  body       :text
 #
 # Indexes
 #
 #  notes_created_at_idx   (created_at)
 #  notes_tile_status_idx  (tile,status)
 #  notes_updated_at_idx   (updated_at)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (author_id => users.id)
 #
 
 class Note < ApplicationRecord
