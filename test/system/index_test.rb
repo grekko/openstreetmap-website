@@ -23,7 +23,7 @@ class IndexTest < ApplicationSystemTestCase
     sign_in_as(create(:moderator_user))
     hidden_note = create(:note, :status => "hidden", :body => "this-is-a-hidden-note")
     position = (1.003 * GeoRecord::SCALE).to_i
-    visible_note = create(:note, :latitude => position, :longitude => position, :body => "this-is-a-visible-note")
+    create(:note, :latitude => position, :longitude => position, :body => "this-is-a-visible-note")
 
     visit root_path(:anchor => "map=15/1/1") # view place of hidden note in case it is not rendered during note_path(hidden_note)
     visit note_path(hidden_note)
