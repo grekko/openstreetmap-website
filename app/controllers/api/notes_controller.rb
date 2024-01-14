@@ -86,7 +86,7 @@ module Api
       comment = params[:text]
 
       # Create the note
-      attributes = { :lat => lat, :lon => lon, :body => comment }.merge(author_for_note_or_comment_attributes)
+      attributes = { :lat => lat, :lon => lon, :body => comment }.merge(author_attributes)
       @note = Note.create(attributes)
       raise OSM::APIBadUserInput, "The note is outside this world" unless @note.in_world?
 
@@ -389,7 +389,7 @@ module Api
     ##
     # Add a comment to a note
     def add_comment(note, text, event, notify: true)
-      attributes = { :visible => true, :event => event, :body => text }.merge(author_for_note_or_comment_attributes)
+      attributes = { :visible => true, :event => event, :body => text }.merge(author_attributes)
       comment = note.comments.create!(attributes)
 
       users_to_notify = ([note.author] + note.comments.map(&:author)).uniq
@@ -398,7 +398,7 @@ module Api
       end
     end
 
-    def author_for_note_or_comment_attributes
+    def author_attributes
       return { :author_ip => request.remote_ip } if (doorkeeper_token || current_token) && scope_enabled?(:write_notes)
 
       { :author => current_user }
