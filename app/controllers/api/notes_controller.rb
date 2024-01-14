@@ -262,13 +262,13 @@ module Api
           raise OSM::APIBadUserInput, "User #{params[:user]} not known" unless @user
         end
 
-        @notes = @notes.joins(:comments).where(:note_comments => { :author_id => @user })
+        @notes = @notes.left_joins(:comments).where(:note_comments => { :author_id => @user })
                        .or(@notes.where(:author_id => @user))
       end
 
       # Add any text filter
       if params[:q]
-        @notes = @notes.joins(:comments).where("to_tsvector('english', note_comments.body) @@ plainto_tsquery('english', ?)", params[:q])
+        @notes = @notes.left_joins(:comments).where("to_tsvector('english', note_comments.body) @@ plainto_tsquery('english', ?)", params[:q])
                        .or(@notes = @notes.where("to_tsvector('english', notes.body) @@ plainto_tsquery('english', ?)", params[:q]))
       end
 

@@ -792,7 +792,7 @@ module Api
     end
 
     def test_search_success
-      create(:note)
+      create(:note, :body => "note comment")
 
       get search_api_notes_path(:q => "note comment", :format => "xml")
       assert_response :success
