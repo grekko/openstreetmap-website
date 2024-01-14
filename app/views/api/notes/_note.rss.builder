@@ -3,7 +3,7 @@ xml.item do
 
   if note.closed?
     xml.title t("api.notes.rss.closed", :place => location)
-  elsif note.comments.length > 1
+  elsif note.comments_for_api.any?
     xml.title t("api.notes.rss.commented", :place => location)
   else
     xml.title t("api.notes.rss.opened", :place => location)
@@ -11,7 +11,7 @@ xml.item do
 
   xml.link note_url(note)
   xml.guid api_note_url(note)
-  xml.description render(:partial => "description", :object => note, :formats => [:html])
+  xml.description render(:partial => "description", :locals => { :note => note }, :formats => [:html])
 
   xml.dc :creator, note.author.display_name if note.author
 

@@ -231,6 +231,12 @@ module Api
                              .order(:created_at => :desc).limit(result_limit)
                              .preload(:author, :note => { :comments => :author })
 
+      # FIXME: Uff, we need to consider Note-records AND NoteComment-records here
+      @comments = @comments.to_a
+      notes.each do |note|
+        @comments << note.send(:build_opened_comment)
+      end
+
       # Render the result
       respond_to do |format|
         format.rss
@@ -257,10 +263,14 @@ module Api
         end
 
         @notes = @notes.joins(:comments).where(:note_comments => { :author_id => @user })
+                       .or(@notes.where(:author_id => @user))
       end
 
       # Add any text filter
-      @notes = @notes.joins(:comments).where("to_tsvector('english', note_comments.body) @@ plainto_tsquery('english', ?)", params[:q]) if params[:q]
+      if params[:q]
+        @notes = @notes.joins(:comments).where("to_tsvector('english', note_comments.body) @@ plainto_tsquery('english', ?)", params[:q])
+                       .or(@notes = @notes.where("to_tsvector('english', notes.body) @@ plainto_tsquery('english', ?)", params[:q]))
+      end
 
       # Add any date filter
       if params[:from]
@@ -382,7 +392,8 @@ module Api
       attributes = { :visible => true, :event => event, :body => text }.merge(author_for_note_or_comment_attributes)
       comment = note.comments.create!(attributes)
 
-      note.comments.map(&:author).uniq.each do |user|
+      users_to_notify = ([note.author] + note.comments.map(&:author)).uniq
+      users_to_notify.each do |user|
         UserMailer.note_comment_notification(comment, user).deliver_later if notify && user && user != current_user && user.visible?
       end
     end

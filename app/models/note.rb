@@ -42,6 +42,10 @@ class Note < ApplicationRecord
 
   DEFAULT_FRESHLY_CLOSED_LIMIT = 7.days
 
+  def comments_for_api
+    @comments_for_api ||= build_comments_for_api
+  end
+
   # Sanity check the latitude and longitude and add an error if it's broken
   def validate_position
     errors.add(:base, "Note is not in the world") unless in_world?
@@ -84,35 +88,51 @@ class Note < ApplicationRecord
   end
 
   # FIXME notes_refactoring
-  def body?
-    self[:body].present?
+  def inludes_body_and_author?
+    attributes["body"].present? && %w[author_ip author_id].any? { |key| attributes.keys.include?(key) }
   end
 
+  # FIXME notes_refactoring
   # Return the author object, derived from the first comment
   def author
-    return self[:author] if self[:author]
-
-    comment_opened_note&.author
+    super || comment_opened_note&.author
   end
 
+  # FIXME notes_refactoring
   # Return the author IP address, derived from the first comment
   def author_ip
-    return self[:author_ip] if self[:author_ip]
-
-    comment_opened_note&.author_ip
+    super || comment_opened_note&.author_ip
   end
 
   # Return the note body
   def body
-    if self[:body].present?
-      RichText.new("text", self[:body])
-    else
-      comment_opened_note&.body || RichText.new("text", "")
-    end
+    body = super || comment_opened_note&.body&.to_s
+    RichText.new("text", body)
   end
 
   private
 
+  def build_comments_for_api
+    # FIXME notes_refactoring no need for the guard once the backfilling is completed
+    return comments unless inludes_body_and_author?
+
+    comments = self.comments.to_a
+    comments.unshift(build_opened_comment)
+    comments
+  end
+
+  def build_opened_comment
+    NoteComment.new(
+      created_at: created_at,
+      event: "opened",
+      note: self,
+      author: author,
+      author_ip: author_ip,
+      body: body,
+    )
+  end
+
+  # FIXME notes_refactoring
   def comment_opened_note
     comments.find_by(event: "opened")
   end

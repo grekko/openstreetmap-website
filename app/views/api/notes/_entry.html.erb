@@ -1,4 +1,4 @@
 <h2><%= t ".comment" %></h2>
 <%= render :partial => "comment", :object => entry %>
 <h2><%= t ".full" %></h2>
-<%= render :partial => "description", :object => entry.note %>
+<%= render :partial => "description", :locals => { :note => entry.note } %>
