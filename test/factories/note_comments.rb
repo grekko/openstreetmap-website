@@ -4,10 +4,5 @@ FactoryBot.define do
     visible { true }
     event { "commented" }
     note
-
-    # FIXME: notes_refactoring
-    trait :opened do
-      event { "opened" }
-    end
   end
 end
