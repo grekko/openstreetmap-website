@@ -88,7 +88,7 @@ class Note < ApplicationRecord
   end
 
   # FIXME notes_refactoring
-  def inludes_body_and_author?
+  def includes_body_and_author?
     attributes["body"].present? && %w[author_ip author_id].any? { |key| attributes.keys.include?(key) }
   end
 
@@ -114,7 +114,7 @@ class Note < ApplicationRecord
 
   def build_comments_for_api
     # FIXME notes_refactoring no need for the guard once the backfilling is completed
-    return comments unless inludes_body_and_author?
+    return comments unless includes_body_and_author?
 
     comments = self.comments.to_a
     comments.unshift(build_opened_comment)

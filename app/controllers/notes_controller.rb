@@ -39,7 +39,7 @@ class NotesController < ApplicationController
     end
 
     # FIXME notes_refactoring
-    unless @note.body?
+    unless @note.includes_body_and_author?
       @note_comments = @note_comments.drop(1)
     end
   rescue ActiveRecord::RecordNotFound
