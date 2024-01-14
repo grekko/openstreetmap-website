@@ -11,7 +11,7 @@ class IndexTest < ApplicationSystemTestCase
   end
 
   test "note included in edit link" do
-    note = create(:note_with_comments)
+    note = create(:note)
     visit note_path(note)
     assert_selector "#editanchor[href*='?note=#{note.id}#']"
 

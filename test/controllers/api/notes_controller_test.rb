@@ -728,10 +728,10 @@ module Api
     end
 
     def test_index_closed
-      create(:note_with_comments, :status => "closed", :closed_at => Time.now.utc - 5.days)
-      create(:note_with_comments, :status => "closed", :closed_at => Time.now.utc - 100.days)
-      create(:note_with_comments, :status => "hidden")
-      create(:note_with_comments)
+      create(:note, :status => "closed", :closed_at => Time.now.utc - 5.days)
+      create(:note, :status => "closed", :closed_at => Time.now.utc - 100.days)
+      create(:note, :status => "hidden")
+      create(:note)
 
       # Open notes + closed in last 7 days
       get api_notes_path(:bbox => "1,1,1.7,1.7", :closed => "7", :format => "json")
@@ -792,7 +792,7 @@ module Api
     end
 
     def test_search_success
-      create(:note_with_comments)
+      create(:note)
 
       get search_api_notes_path(:q => "note comment", :format => "xml")
       assert_response :success
@@ -907,7 +907,7 @@ module Api
     def test_search_by_bbox_success
       notes = Array.new(5) do |i|
         position = ((1.0 + (i * 0.1)) * GeoRecord::SCALE).to_i
-        create(:note_with_comments, :created_at => Time.parse("2020-01-01T00:00:00Z") + i.day, :latitude => position, :longitude => position)
+        create(:note, :created_at => Time.parse("2020-01-01T00:00:00Z") + i.day, :latitude => position, :longitude => position)
       end
 
       get search_api_notes_path(:bbox => "1.0,1.0,1.6,1.6", :sort => "created_at", :order => "oldest", :format => "xml")
@@ -927,7 +927,7 @@ module Api
     end
 
     def test_search_no_match
-      create(:note_with_comments)
+      create(:note)
 
       get search_api_notes_path(:q => "no match", :format => "xml")
       assert_response :success

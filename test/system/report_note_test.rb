@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class ReportNoteTest < ApplicationSystemTestCase
   def test_no_link_when_not_logged_in
-    note = create(:note_with_comments)
+    note = create(:note)
     visit note_path(note)
     assert_content note.comments.first.body
 
@@ -10,7 +10,7 @@ class ReportNoteTest < ApplicationSystemTestCase
   end
 
   def test_can_report_anonymous_notes
-    note = create(:note_with_comments)
+    note = create(:note)
     sign_in_as(create(:user))
     visit note_path(note)
 
@@ -31,7 +31,7 @@ class ReportNoteTest < ApplicationSystemTestCase
   end
 
   def test_can_report_notes_with_author
-    note = create(:note_comment, :author => create(:user)).note
+    note = create(:note, :author => create(:user))
     sign_in_as(create(:user))
     visit note_path(note)
 
