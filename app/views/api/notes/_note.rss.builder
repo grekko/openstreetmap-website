@@ -11,7 +11,7 @@ xml.item do
 
   xml.link note_url(note)
   xml.guid api_note_url(note)
-  xml.description render(:partial => "description", :locals => { :note => note }, :formats => [:html])
+  xml.description render(:partial => "description", :object => note, :formats => [:html])
 
   xml.dc :creator, note.author.display_name if note.author
 

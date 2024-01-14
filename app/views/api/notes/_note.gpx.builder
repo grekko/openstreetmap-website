@@ -3,7 +3,7 @@ xml.wpt("lon" => note.lon, "lat" => note.lat) do
   xml.name t("notes.show.title", :id => note.id)
 
   xml.desc do
-    xml.cdata! render(:partial => "description", :locals => { :note => note }, :formats => [:html])
+    xml.cdata! render(:partial => "description", :object => note, :formats => [:html])
   end
 
   xml.link("href" => note_url(note, :only_path => false))
