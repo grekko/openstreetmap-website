@@ -226,16 +226,12 @@ module Api
       notes = closed_condition(Note.all)
       notes = bbox_condition(notes)
 
-      # Find the comments we want to return
-      @comments = NoteComment.where(:note => notes)
-                             .order(:created_at => :desc).limit(result_limit)
-                             .preload(:author, :note => { :comments => :author })
+      # Find the notes and comments we want to return
+      notes = notes.left_joins(:comments)
+                   .order(:created_at => :desc, :note_comments => :desc).limit(result_limit)
+                   .preload(:author, :comments => :author)
 
-      # FIXME: Uff, we need to consider Note-records AND NoteComment-records here
-      @comments = @comments.to_a
-      notes.each do |note|
-        @comments << note.send(:build_opened_comment)
-      end
+      @comments = notes.flat_map(&:comments_with_extra_open_comment)
 
       # Render the result
       respond_to do |format|

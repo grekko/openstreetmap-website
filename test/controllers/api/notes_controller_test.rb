@@ -1018,7 +1018,8 @@ module Api
 
     def test_feed_success
       position = (1.1 * GeoRecord::SCALE).to_i
-      create(:note, :latitude => position, :longitude => position)
+      note = create(:note, :latitude => position, :longitude => position)
+      create(:note_comment, :note => note, :body => "I should be included in the feed.")
       create(:note, :latitude => position, :longitude => position)
       position = (1.5 * GeoRecord::SCALE).to_i
       create(:note, :latitude => position, :longitude => position)
@@ -1029,7 +1030,7 @@ module Api
       assert_equal "application/rss+xml", @response.media_type
       assert_select "rss", :count => 1 do
         assert_select "channel", :count => 1 do
-          assert_select "item", :count => 4
+          assert_select "item", :count => 5
         end
       end
 
@@ -1039,7 +1040,7 @@ module Api
       assert_select "rss", :count => 1 do
         assert_select "channel", :count => 1 do
           assert_select "description", :text => /1\.2/, :count => 1
-          assert_select "item", :count => 2
+          assert_select "item", :count => 3
         end
       end
 

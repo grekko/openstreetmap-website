@@ -49,8 +49,8 @@ class Note < ApplicationRecord
 
   DEFAULT_FRESHLY_CLOSED_LIMIT = 7.days
 
-  def comments_for_api
-    @comments_for_api ||= build_comments_for_api
+  def comments_with_extra_open_comment
+    @comments_with_extra_open_comment ||= build_comments_with_extra_open_comment
   end
 
   # Sanity check the latitude and longitude and add an error if it's broken
@@ -119,17 +119,16 @@ class Note < ApplicationRecord
 
   private
 
-  def build_comments_for_api
-    # FIXME: notes_refactoring no need for the guard once the backfilling is completed
-    return comments unless includes_body_and_author?
-
-    comments = self.comments.to_a
-    comments.unshift(build_opened_comment)
-    comments
+  # FIXME: notes_refactoring
+  def comment_opened_note
+    comments.find_by(:event => "opened")
   end
 
-  def build_opened_comment
-    NoteComment.new(
+  def build_comments_with_extra_open_comment
+    # FIXME: notes_refactoring remove this guard once the backfilling is completed
+    return comments unless includes_body_and_author?
+
+    comments.to_a.unshift(NoteComment.new(
       :created_at => created_at,
       :event => "opened",
       :note => self,
@@ -137,11 +136,6 @@ class Note < ApplicationRecord
       :author_ip => author_ip,
       :body => body
     )
-  end
-
-  # FIXME: notes_refactoring
-  def comment_opened_note
-    comments.find_by(:event => "opened")
   end
 
   # Fill in default values for new notes
