@@ -94,48 +94,48 @@ class Note < ApplicationRecord
     closed_at + DEFAULT_FRESHLY_CLOSED_LIMIT
   end
 
-  # FIXME: notes_refactoring
-  def includes_body_and_author?
-    attributes["body"].present? && %w[author_ip author_id].any? { |key| attributes.key?(key) }
+  # FIXME: notes_refactoring remove this once the backfilling is completed
+  def body_migrated?
+    attributes["body"].present?
   end
 
-  # FIXME: notes_refactoring
-  # Return the author object, derived from the first comment
+  # FIXME: notes_refactoring remove this once the backfilling is completed
   def author
-    super || comment_opened_note&.author
+    super || opened_note_comment&.author
   end
 
-  # FIXME: notes_refactoring
-  # Return the author IP address, derived from the first comment
+  # FIXME: notes_refactoring remove this once the backfilling is completed
   def author_ip
-    super || comment_opened_note&.author_ip
+    super || opened_note_comment&.author_ip
   end
 
   # Return the note body
   def body
-    body = super || comment_opened_note&.body&.to_s
+    body = super || opened_note_comment&.body&.to_s
     RichText.new("text", body)
   end
 
   private
 
-  # FIXME: notes_refactoring
-  def comment_opened_note
+  # FIXME: notes_refactoring remove this once the backfilling is completed
+  def opened_note_comment
     comments.find_by(:event => "opened")
   end
 
+  # NB: For API backwards compatibility the comments are prepended with an
+  # `open`-comment that was persisted but is not anymore.
   def build_comments_with_extra_open_comment
     # FIXME: notes_refactoring remove this guard once the backfilling is completed
-    return comments unless includes_body_and_author?
+    return comments unless body_migrated?
 
     comments.to_a.unshift(NoteComment.new(
-      :created_at => created_at,
-      :event => "opened",
-      :note => self,
-      :author => author,
-      :author_ip => author_ip,
-      :body => body
-    )
+                            :created_at => created_at,
+                            :event => "opened",
+                            :note => self,
+                            :author => author,
+                            :author_ip => author_ip,
+                            :body => body
+                          ))
   end
 
   # Fill in default values for new notes
