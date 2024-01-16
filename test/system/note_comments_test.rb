@@ -2,7 +2,7 @@ require "application_system_test_case"
 
 class NoteCommentsTest < ApplicationSystemTestCase
   def test_action_text
-    note = create(:note_with_comments)
+    note = create(:note)
     sign_in_as(create(:user))
     visit note_path(note)
 
